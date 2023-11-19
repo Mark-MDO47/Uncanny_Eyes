@@ -20,4 +20,5 @@ uncannyEyes/config.h shows compile/load status for different eye selections. Two
 
 I suspect that the code has grown since the last time they checked this on an M0 Hallowing. These two have larger iris bitmaps which more than makes up for the smaller sclera bitmaps.
 
+The UF2 files pointed at in the M0 Hallowing "Learning" file do still work. I saved all the official M0 UF2 files in the repo.
 
