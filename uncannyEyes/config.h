@@ -5,6 +5,7 @@
 
 // GRAPHICS SETTINGS (appearance of eye) -----------------------------------
 
+#define ADAFRUIT_HALLOWING 1
 // If using a SINGLE EYE, you might want this next line enabled, which
 // uses a simpler "football-shaped" eye that's left/right symmetrical.
 // Default shape includes the caruncle, creating distinct left/right eyes.
