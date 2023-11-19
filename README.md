@@ -10,3 +10,14 @@ Teensy 3.x w/OLED screens: use 72 MHz board speed -- 96 MHz requires throttling 
 Directory 'uncannyEyes' contains Arduino sketch for PJRC Teensy 3.1 & Adafruit M0 & M4. 'graphics' subfolder has various eye designs, as #include-able header files.
 
 Folder 'convert' contains Python sketch for generating graphics header files. Requires Python Imaging Library. Example images are also in this directory.
+
+# Forked by github.com/Mark-MDO47
+uncannyEyes/config.h shows compile/load status for different eye selections. Two do not fit on Adafruit Hallowing M0 Express https://www.adafruit.com/product/3900:
+```C
+//#include "graphics/dragonEye.h"     // Slit pupil fiery dragon/demon eye -OR-  // M0 ld.exe: region `FLASH' overflowed by 4664 bytes
+//#include "graphics/noScleraEye.h"   // Large iris, no sclera -OR-              // M0 ld.exe: region `FLASH' overflowed by 4664 bytes
+```
+
+I suspect that the code has grown since the last time they checked this on an M0 Hallowing. These two have larger iris bitmaps which more than makes up for the smaller sclera bitmaps.
+
+
