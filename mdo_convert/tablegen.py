@@ -63,7 +63,7 @@ def do_generate_565_table(image_dir_name, add_progmem):
         print('#define %s_HEIGHT  %s' % (table_name, str(IMAGE.size[1])))
         print('')
         
-        sys.stdout.write('const uint16_t sclera[%s_HEIGHT][%s_WIDTH] %s= {' % (table_name,table_name,add_progmem))
+        sys.stdout.write('const uint16_t %s_565[%s_HEIGHT][%s_WIDTH] %s= {' % (table_name,table_name,table_name,add_progmem))
         HEX = HexTable(IMAGE.size[0] * IMAGE.size[1], 8, 4)
         
         # Convert 24-bit image to 16 bits:
