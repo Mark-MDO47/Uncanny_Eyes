@@ -37,7 +37,7 @@ from hextable import HexTable
 # does not attempt to handle filenames with characters that cannot be used in
 #    C variable names. Caveat Programmor.
 #
-def do_generate_565_table(image_dir_name, add_progmem):
+def do_generate_565_table(image_dir_name, add_progmem, left_chop):
 
     while ("\\" == image_dir_name[-1]) or ("/" == image_dir_name[-1]):
         image_dir_name = image_dir_name[:-1]
@@ -59,7 +59,7 @@ def do_generate_565_table(image_dir_name, add_progmem):
         else:
             table_name_list.append(table_name)
 
-        print('#define %s_WIDTH  %s'  % (table_name, str(IMAGE.size[0])))
+        print('#define %s_WIDTH  %s'  % (table_name, str(IMAGE.size[0]-left_chop)))
         print('#define %s_HEIGHT  %s' % (table_name, str(IMAGE.size[1])))
         print('')
         
@@ -68,7 +68,7 @@ def do_generate_565_table(image_dir_name, add_progmem):
         
         # Convert 24-bit image to 16 bits:
         for y in range(IMAGE.size[1]):
-            for x in range(IMAGE.size[0]):
+            for x in range(left_chop,IMAGE.size[0]):
                 p = PIXELS[x, y] # Pixel data (tuple)
                 HEX.write(
                     ((p[0] & 0b11111000) << 8) | # Convert 24-bit RGB
@@ -96,9 +96,12 @@ python tablegen.py --no_progmem image_dir_name
 python tablegen.py -np image_dir_name
 python tablegen.py --progmem image_dir_name
 python tablegen.py -p image_dir_name
+python tablegen.py image_dir_name --leftchop=60
 """,
         usage='python %(prog)s {-h} {{-p} {-np}} image_dir_name')
     my_parser.add_argument('image_dir_name',type=str,help='path to directory with *.png *.jpg *.bmp files to convert')
+    my_parser.add_argument('-lc','--leftchop', const=0, default=0, type=int,
+              help='The width of pixels to chop off of left', nargs='?')
     me_group1 = my_parser.add_mutually_exclusive_group(required=False)
     me_group1.add_argument('-np',
                            '--no_progmem',
@@ -114,4 +117,5 @@ python tablegen.py -p image_dir_name
     if args.progmem:
         add_progmem = "PROGMEM "
 
-    do_generate_565_table(args.image_dir_name, add_progmem)
+    print("%s progmem=%s lc=%s" % (args.image_dir_name, add_progmem, args.leftchop))
+    do_generate_565_table(args.image_dir_name, add_progmem, args.leftchop)
