@@ -30,14 +30,14 @@ from PIL import Image
 from hextable import HexTable
 
 #######################################################################
-# do_generate_565_table(image_dir_name)
+# do_generate_565_table_bin(image_dir_name)
 #   reads image_dir_name (typically a *.png file) and outputs a table of
 #   values converted to RGB 565 format.
 #
 # does not attempt to handle filenames with characters that cannot be used in
 #    C variable names. Caveat Programmor.
 #
-def do_generate_565_table(image_dir_name, add_progmem, left_chop):
+def do_generate_565_table_bin(image_dir_name, add_progmem, left_chop):
 
     while ("\\" == image_dir_name[-1]) or ("/" == image_dir_name[-1]):
         image_dir_name = image_dir_name[:-1]
@@ -50,7 +50,8 @@ def do_generate_565_table(image_dir_name, add_progmem, left_chop):
             pass # cannot use ! here, strangely
         else:
             continue
-        IMAGE = Image.open("%s\\%s" % (image_dir_name, a_fname))
+        input_fname = "%s\\%s" % (image_dir_name, a_fname)
+        IMAGE = Image.open(input_fname)
         IMAGE = IMAGE.convert('RGB')
         PIXELS = IMAGE.load()
         table_name = a_fname[:a_fname.rfind(".")]
@@ -59,22 +60,32 @@ def do_generate_565_table(image_dir_name, add_progmem, left_chop):
         else:
             table_name_list.append(table_name)
 
+        print('// from filename %s' % input_fname)
         print('#define %s_WIDTH  %s'  % (table_name, str(IMAGE.size[0]-left_chop)))
         print('#define %s_HEIGHT  %s' % (table_name, str(IMAGE.size[1])))
         print('')
-        
+
         sys.stdout.write('const uint16_t %s_565[%s_HEIGHT][%s_WIDTH] %s= {' % (table_name,table_name,table_name,add_progmem))
         HEX = HexTable(IMAGE.size[0] * IMAGE.size[1], 8, 4)
         
         # Convert 24-bit image to 16 bits:
+        ba = bytearray()
         for y in range(IMAGE.size[1]):
             for x in range(left_chop,IMAGE.size[0]):
                 p = PIXELS[x, y] # Pixel data (tuple)
-                HEX.write(
-                    ((p[0] & 0b11111000) << 8) | # Convert 24-bit RGB
-                    ((p[1] & 0b11111100) << 3) | # to 16-bit value w/
-                    (p[2] >> 3))                 # 5/6/5-bit packing
-        # end do_generate_565_table
+                # Convert 24-bit RGB to 16-bit value w/ 5/6/5-bit packing
+                bits16 = (p[0] & 0b11111000) << 8 | \
+                    (p[1] & 0b11111100) << 3      | \
+                    (p[2] & 0b11111000) >> 3
+                HEX.write(bits16)
+                ba.append((bits16 >> 8) & 0xff) # msbyte first == big-endian
+                ba.append(bits16 & 0xff)
+        # write the binary file in big-endian
+        outputbin_fname = input_fname[:input_fname.rfind(".")] + ".bin"
+        fptr = open(outputbin_fname, "wb")
+        fptr.write(ba)
+        fptr.close()
+        # end do_generate_565_table_bin
 
 #######################################################################
 # "__main__" processing for tablegen
@@ -118,4 +129,4 @@ python tablegen.py image_dir_name --leftchop=60
         add_progmem = "PROGMEM "
 
     print("%s progmem=%s lc=%s" % (args.image_dir_name, add_progmem, args.leftchop))
-    do_generate_565_table(args.image_dir_name, add_progmem, args.leftchop)
+    do_generate_565_table_bin(args.image_dir_name, add_progmem, args.leftchop)
