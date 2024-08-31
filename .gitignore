@@ -1,4 +1,5 @@
-# mdo additions__pycache__/
+# mdo additions
+__pycache__/
 .cache
 .pytest_cache/
 .webassets-cache
